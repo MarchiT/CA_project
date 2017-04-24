@@ -40,6 +40,7 @@ int level = 1;
 unsigned long tmp_lava = 0;
 char cur_level = 1;
 
+
 void setup() {
   #if defined (__AVR_ATtiny85__)
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
@@ -55,9 +56,21 @@ void setup() {
   pixels = &strips[0];
 }
 
+
+void finish_movie() {
+  field = LEVEL_END;
+  // bool finished = 0;
+
+  while (digitalRead(SW_PIN)) {
+    end_effect();
+    refreshLeds();
+  }
+}
+
 void loop() {
 //  Serial.print("player_index: "); Serial.println((int)player_index);
   if (check_final()) {
+    finish_movie();
     level_init(++cur_level);
   }
   check_lava();
@@ -70,14 +83,15 @@ void loop() {
 }
 
 bool check_final() {
-  return (player_index == 79);
+  return field[player_index] == 'E';
+  // return (player_index == 8);
 }
 
 void level_init(int cur_level) {
 Serial.println("level_init");
   switch(cur_level) {
     case 1: field = FIELD1; break;
-    case 2: field = LEVEL_END; break;
+    case 2: field = FIELD2; break;
 
     default: field = FIELD1; break;
   }
@@ -92,7 +106,7 @@ void check_lava() {
    if(millis() >= (tmp_lava + 1200)) {
     tmp_lava = millis();
     for (int i = 0; i < PIXELS_COUNT; i++) {
-      if (field[i] == 'L') 
+      if (field[i] == 'L')
         field[i] = 'l';
       else if(field[i] == 'l')
         field[i] = 'L';
@@ -104,7 +118,7 @@ void end_effect() {
    if(millis() >= (tmp_lava + 100)) {
     tmp_lava = millis();
     for (int i = 0; i < PIXELS_COUNT; i++) {
-      if (field[i] == 'Y') 
+      if (field[i] == 'Y')
         field[i] = 'P';
       else if(field[i] == 'P')
         field[i] = 'Y';
@@ -165,6 +179,8 @@ void cast_field() {
       case 'l': colored[i] = GREEN; break;
       case 'Y': colored[i] = YELLOW; break;
       case 'P': colored[i] = PINK; break;
+      case 'M': colored[i] = MAGENTA; break;
+      case 'E': colored[i] = WHITE; break;
       default: colored[i] = OFF; break;
     }
     if(player_type == 'P')

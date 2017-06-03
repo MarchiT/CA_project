@@ -1,8 +1,7 @@
 #ifndef LEVELS_H_
 #define LEVELS_H_
 
-//#include <stdint.h>
-//#include "colors.h"
+
 #include "constants.h"
 
 //80 pixels

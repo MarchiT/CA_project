@@ -10,8 +10,6 @@
 #include "colors.h"
 #include "levels.h"
 
-char player_index = 0;
-char player_type  = 'P';
 
 char *field;
 
@@ -25,20 +23,20 @@ Adafruit_NeoPixel strips[STRIPS_COUNT] = {
   Adafruit_NeoPixel(PIXELS_COUNT_PER_STRIP, PIN4, NEO_GRB + NEO_KHZ400),
   Adafruit_NeoPixel(PIXELS_COUNT_PER_STRIP, PIN5, NEO_GRB + NEO_KHZ400)};
 
-const long debounce = 200;
-long time = 0;
-int previous = LOW;
-bool start = false;
-unsigned long speed_time = 0;
+char player_index = 0;
+char player_type  = 'P';
 
-unsigned long blink_time = 0;
-char stat = 0;
-
-
-int cur = 0;
-int level = 1;
-unsigned long tmp_lava = 0;
+char cur_strip = 0;
 char cur_level = 1;
+
+unsigned long speed_time = 0;
+unsigned long blink_time = 0;
+unsigned long tmp_lava = 0;
+
+// const long debounce = 200;
+// long time = 0;
+// int previous = LOW;
+// bool start = false;
 
 
 void setup() {
@@ -57,16 +55,6 @@ void setup() {
 }
 
 
-void finish_movie() {
-  field = LEVEL_END;
-  // bool finished = 0;
-
-  while (digitalRead(SW_PIN)) {
-    end_effect();
-    refreshLeds();
-  }
-}
-
 void loop() {
 //  Serial.print("player_index: "); Serial.println((int)player_index);
   if (check_final()) {
@@ -80,6 +68,16 @@ void loop() {
     player_index = 0;
   }
   refreshLeds();
+}
+
+
+void finish_movie() {
+  field = LEVEL_END;
+
+  while (digitalRead(SW_PIN)) {
+    end_effect();
+    refreshLeds();
+  }
 }
 
 bool check_final() {
@@ -115,7 +113,7 @@ void check_lava() {
 }
 
 void end_effect() {
-   if(millis() >= (tmp_lava + 100)) {
+   if(millis() >= (tmp_lava + 200)) {
     tmp_lava = millis();
     for (int i = 0; i < PIXELS_COUNT; i++) {
       if (field[i] == 'Y')
@@ -156,17 +154,17 @@ void movement() {
 bool configure_strip_usage(int& index) {
   if (index >= PIXELS_COUNT_PER_STRIP) {
     index = 0;
-    if (cur == 4)  {
-      cur = 0;
-      pixels = &strips[cur];
+    if (cur_strip == 4)  {
+      cur_strip = 0;
+      pixels = &strips[cur_strip];
       return true;
     }
-    pixels = &strips[++cur];
+    pixels = &strips[++cur_strip];
   } else if (index < 0) {
     index = 0;
-    if (cur != 0) {
+    if (cur_strip != 0) {
       index = PIXELS_COUNT_PER_STRIP - 1;
-      pixels = &strips[--cur];
+      pixels = &strips[--cur_strip];
     }
   }
   return false;
